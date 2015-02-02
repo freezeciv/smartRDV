@@ -283,7 +283,7 @@ function connectDb(){
 
 function connectAndUpdateBdd($email,$password,$connection_id){
     $password_hash=hashString($password); //hash password
-    $extractPassword=sql_OneResult_Table_KeyField_KeyValue_FieldAsked('user','email',$email,'pwd');    
+    $extractPassword=sql_OneResult_Table_KeyField_KeyValue_FieldAsked('pro','email',$email,'pwd');    
     // Checks if this login is already used by another member  
     if ($extractPassword == -1) return 0;
     // to check if the password is correct
@@ -461,8 +461,7 @@ function buildBotSlotsArray2D($author_id,$env,$city,$category,$key_words,$key_ci
     $fields="m.id,m.meeting_date,m.meeting_end_date,t.category,t.info_url,t.booking_url,t.title,t.city,t.label,t.longitude,t.latitude,t.phone,m.discount_rate,s.discount_mode,s.price,s.target_id,s.submenu,s.menu,s.max_ticket_nb";
     switch($env) {
         case 0:{ // All environment 
-            //WARNING for debug only: condition TO_SECONDS should be removed if we limit form request to datetime after current date. Verification should be madeduring form completion and not here
-            $sql = "SELECT $fields FROM bot_targets AS t INNER JOIN bot_submenus AS s ON t.id=s.target_id  INNER JOIN bot_meetings AS m ON m.submenu_id=s.id WHERE $sql_cat_cond AND city='$city' AND (TO_DAYS(meeting_date) - TO_DAYS('$from_date'))>=0 AND (TO_SECONDS(meeting_date) - TO_SECONDS('$now'))>=0 AND m.status>0 $key_words_con $sql_author_id_cond ORDER BY `m`.`meeting_date` LIMIT $offset, $max_result_per_pg";         
+            $sql = "SELECT $fields FROM bot_targets AS t INNER JOIN bot_submenus AS s ON t.id=s.target_id  INNER JOIN bot_meetings AS m ON m.submenu_id=s.id WHERE $sql_cat_cond AND city='$city' AND (TO_DAYS(meeting_date) - TO_DAYS('$from_date'))>=0 AND m.status>0 $key_words_con $sql_author_id_cond ORDER BY `m`.`meeting_date` LIMIT $offset, $max_result_per_pg";         
             break;
         }
         case 1:{ // DISCOUNT environment
@@ -1065,4 +1064,86 @@ function update_Table_Condition_SetFieldsAndValues($table,$condition,$setFieldsA
     // return result
     return $noError;
 }
+
+function setPageTitleSylvain($title) {
+    echo "smartRDV.fr | $title";
+}
+
+
+
+/******************************************************************************************************************************/
+/******************************************************************************************************************************/
+/******************************************************************************************************************************/
+
+/* Functions Sylvain */
+
+/******************************************************************************************************************************/
+/******************************************************************************************************************************/
+/******************************************************************************************************************************/
+
+
+function connectAccount(){
+
+}
+
+
+function updateUserData($user_id, $array_data){
+    $noError = true;
+    $sql = "UPDATE pro SET ".arrayToSqlFields($array_data)." WHERE  id = ".$user_id;
+    $result = mysql_query($sql) or $noError = errorLog(5,'updateUserData',"Couldn't execute sql: $sql");
+    return $noError;}
+
+function isRigthStringFormat($string, $type){ // Return true or string = error message
+    switch ($type){
+        case 'email':
+            if($string == '') return "Veuillez saisir l'email.";
+            if(preg_match("/@.*\./",$string) == 0) return "L'email n'est pas valide.";
+            return true; break;
+        case 'password':
+            if($string == '') return "Veuillez saisir le mot de passe.";
+            return true; break;
+        case 'code postal':
+            if($string == '') return "Veuillez saisir le code postal.";
+            return true; break;
+        case 'categorie':
+            if($string == '') return "Veuillez saisir la catégorie.";
+            return true; break;
+        case 'adress':
+            if($string == '') return "Veuillez saisir l'adresse.";
+            return true; break;
+        case 'url':
+            if($string == '') return "Veuillez saisir l'url.";
+            return true; break;
+        case 'tel':
+            if($string == '') return "Veuillez saisir le téléphone.";
+            return true; break;
+        case 'entreprise':
+            if($string == '') return "Veuillez saisir le nom de l'entreprise.";
+            return true; break;
+        default: return true;}}
+
+function getDatabaseData($table,$fieldsAsked,$condition){return sqlArray2D_AllRows_Tables_FieldsAsked_Condition_OrderKey_AscOrDesc_Off_Lim($table, $fieldsAsked, $condition, 'id', 'ASC', 0, 500);}
+
+function arrayToSqlFields($array){
+    $first = true;
+    $sql = "";
+    foreach ($array as $field => $value){
+        if(is_string($value)) $value = "'".$value."'";
+        if($first == true ){
+        $first = false;
+        $sql.= $field.' = '.$value;}
+        else{
+        $sql.= ','.$field.' = '.$value;}}
+    return $sql;}
+
+
+
+
+
+
+
+
+
+
+
 ?>
